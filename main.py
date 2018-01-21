@@ -19,8 +19,10 @@
 
 import string
 import random
+import os
 
 from flask import Flask, render_template, abort, request, redirect, url_for
+from werkzeug.utils import secure_filename
 from flask_wtf.csrf import CSRFProtect
 
 import markdown2
@@ -35,6 +37,10 @@ from settings import PAGE_NAME_SUFFIX
 app = Flask(__name__)
 app.config['SECRET_KEY'] = ''.join([random.choice(string.ascii_letters + string.digits) for i in range(4096)])
 csrf = CSRFProtect(app)
+
+# Constants
+FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+RESOURCE_DIR = FILE_DIR + '/static'
 
 """
 Top page (example.com/)'s database page id: #top
@@ -70,7 +76,11 @@ def secret_login():
 @app.route('/secrets/top')
 def secret_top():
     pages_ = pages.get_list()
-    return render_template('secret/top.html', pages=pages_)
+    files = [
+        {'path': 'static/' + file, 'name': file}
+        for file in os.listdir(RESOURCE_DIR) if os.path.isfile(RESOURCE_DIR + '/' + file)]
+
+    return render_template('secret/top.html', pages=pages_, files=files)
 
 
 @app.route('/secrets/pages/new', methods=['GET', 'POST'])
@@ -115,6 +125,23 @@ def secret_edit(page_id):
 @app.route('/secrets/pages/remove/<page_id>')
 def secret_remove(page_id):
     pages.remove(page_id)
+    return redirect(url_for('secret_top'))
+
+
+@app.route('/secrets/files', methods=['POST'])
+def secret_file_post():
+    if request.files.getlist('upload_files')[0].filename:
+        upload_files = request.files.getlist('upload_files')
+        for file in upload_files:
+            file.save(RESOURCE_DIR + '/' + secure_filename(file.filename))
+    return redirect(url_for('secret_top'))
+
+
+@app.route('/secrets/files/remove/<file>')
+def secret_file_remove(file):
+    file = RESOURCE_DIR + '/' + file
+    if os.path.exists(file):
+        os.remove(file)
     return redirect(url_for('secret_top'))
 
 
