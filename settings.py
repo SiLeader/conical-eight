@@ -1,4 +1,7 @@
-{#
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
    Copyright 2018 SiLeader.
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,25 +15,10 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-#}
+"""
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login - Conical Eight</title>
-</head>
-<body>
-    <form action="{{ url_for('secret_login') }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+# Page title suffix
+PAGE_NAME_SUFFIX = ' - my web site'
 
-        <label for="user_id">User ID</label>
-        <input id="user_id" name="user_id" type="text">
-
-        <label for="password">Password</label>
-        <input id="password" name="password" type="password">
-
-        <button type="submit">Login</button>
-    </form>
-</body>
-</html>
+# User information
+PASSWORD_FILE = '/path/to/password/file'
