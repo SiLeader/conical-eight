@@ -18,7 +18,6 @@
 """
 
 import pymongo
-from typing import Optional
 
 
 __client = pymongo.MongoClient('localhost')
@@ -73,7 +72,7 @@ def exists(id_: str) -> bool:
     return __col.find({ID: id_}).count() > 0
 
 
-def get(id_: str) -> Optional[dict]:
+def get(id_: str) -> dict:
     """
     get page by ID
     :param id_: page id
@@ -82,7 +81,7 @@ def get(id_: str) -> Optional[dict]:
     return __col.find_one({ID: id_})
 
 
-def update(id_: str, title: Optional[str]=None, type_: Optional[str]=None, content: Optional[str]=None) -> bool:
+def update(id_: str, title: str=None, type_: str=None, content: str=None) -> bool:
     """
     update page
     :param id_: target page id
