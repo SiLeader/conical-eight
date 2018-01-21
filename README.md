@@ -31,5 +31,19 @@ If you need `favicon.ico` and other files, install to these files in `static` di
 1. Access to `(site host)/secrets/login` and login as administrator.
 1. Select page id in `Remove page`.
 
+## Routing rule
++ `(site host)/<page-id>`
+
+If `page-id` is `#top`, route to `(site host)/`.
+
+## Dependencies
++ MongoDB
+
+### Python modules
++ pymongo
++ Flask
++ Flask-WTF
++ markdown2
+
 ## License
 Apache License 2.0 (See LICENSE)
