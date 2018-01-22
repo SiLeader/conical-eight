@@ -43,7 +43,10 @@ If `page-id` is `#top`, route to `(site host)/`.
 + pymongo
 + Flask
 + Flask-WTF
-+ markdown2
++ markdown
++ pygments
++ py-gfm
+
 
 ## License
 Apache License 2.0 (See LICENSE)

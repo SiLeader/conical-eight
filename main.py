@@ -27,7 +27,7 @@ from flask_wtf.csrf import CSRFProtect
 
 import markdown
 
-from db import pages
+from db import pages, tags
 import user
 import auth
 
@@ -80,25 +80,30 @@ def secret_top():
         {'path': 'static/' + file, 'name': file}
         for file in os.listdir(RESOURCE_DIR) if os.path.isfile(RESOURCE_DIR + '/' + file)]
 
-    return render_template('secret/top.html', pages=pages_, files=files)
+    return render_template('secret/top.html', pages=pages_, files=files, tags=tags.get_list())
 
 
 @app.route('/secrets/pages/new', methods=['GET', 'POST'])
 def secret_new():
     if request.method == 'GET':
+        tags_ = tags.get_list()
+        for tag in tags_:
+            tag['exists'] = False
         return render_template('secret/new_edit.html',
                                url=url_for('secret_new'),
                                id_='',
                                title='',
                                raw=False,
-                               content='')
+                               content='',
+                               tags=tags_)
     else:
         page_title = request.form['title']
         page_type = request.form['type']
         page_id = request.form['id']
-        page_content = request.form['content']
+        page_content = request.form['content'].replace('\r\n', '\n')
+        page_tags = request.form.getlist('tags')
 
-        pages.new(id_=page_id, title=page_title, type_=page_type, content=page_content)
+        pages.new(id_=page_id, title=page_title, type_=page_type, content=page_content, tags=page_tags)
         return redirect(url_for('secret_top'))
 
 
@@ -106,25 +111,50 @@ def secret_new():
 def secret_edit(page_id):
     if request.method == 'GET':
         page = pages.get(page_id)
+        tags_ = tags.get_list()
+        for tag in tags_:
+            if pages.TAGS not in page or tag['id'] not in page[pages.TAGS]:
+                tag['exists'] = False
+            else:
+                tag['exists'] = True
         return render_template('secret/new_edit.html',
                                url=url_for('secret_edit', page_id=page_id),
                                id_=page[pages.ID],
                                title=page[pages.TITLE],
                                raw=(page[pages.TYPE] == pages.TYPE_RAW),
-                               content=page[pages.CONTENT])
+                               content=page[pages.CONTENT],
+                               tags=tags_)
     else:
         page_title = request.form['title']
         page_type = request.form['type']
         page_id = request.form['id']
         page_content = request.form['content'].replace('\r\n', '\n')
+        page_tags = request.form.getlist('tags')
 
-        pages.update(id_=page_id, title=page_title, type_=page_type, content=page_content)
+        pages.update(id_=page_id, title=page_title, type_=page_type, content=page_content, tags=page_tags)
         return redirect(url_for('secret_top'))
 
 
 @app.route('/secrets/pages/remove/<page_id>')
 def secret_remove(page_id):
     pages.remove(page_id)
+    return redirect(url_for('secret_top'))
+
+
+@app.route('/secrets/tags', methods=['POST'])
+def secret_tag_post():
+    id_ = request.form['id']
+    name = request.form['name']
+    if tags.exists(id_=id_):
+        tags.update(id_, name)
+    else:
+        tags.new(id_, name)
+    return redirect(url_for('secret_top'))
+
+
+@app.route('/secrets/tags/remove/<tag_id>')
+def secret_tag_remove(tag_id):
+    tags.remove(tag_id)
     return redirect(url_for('secret_top'))
 
 

@@ -28,6 +28,7 @@ ID = 'id'
 TITLE = 'title'
 TYPE = 'type'
 CONTENT = 'content'
+TAGS = 'tags'
 
 TYPE_MARKDOWN = 'markdown'
 # TYPE_ASCIIDOC = 'asciidoc'
@@ -39,10 +40,11 @@ id: str      -> unique -> page id. example.com/<id>
 title: str   ->        -> page title.
 type: str    ->        -> page type. Markdown or RAW
 content: str ->        -> page content. written in <type>.
+tags: [str]  ->        -> tag list
 """
 
 
-def new(id_: str, title: str, type_: str, content: str) -> bool:
+def new(id_: str, title: str, type_: str, content: str, tags: [str]) -> bool:
     """
     add new page
     :param id_: page id
@@ -81,7 +83,7 @@ def get(id_: str) -> dict:
     return __col.find_one({ID: id_})
 
 
-def update(id_: str, title: str=None, type_: str=None, content: str=None) -> bool:
+def update(id_: str, title: str=None, type_: str=None, content: str=None, tags: [str]=None) -> bool:
     """
     update page
     :param id_: target page id
@@ -97,6 +99,8 @@ def update(id_: str, title: str=None, type_: str=None, content: str=None) -> boo
         doc[TYPE] = type_
     if content is not None:
         doc[CONTENT] = content
+    if tags is not None:
+        doc[TAGS] = tags
     return __col.update_one({ID: id_}, {'$set': doc}).acknowledged
 
 
@@ -115,3 +119,12 @@ def get_list():
     :return: questions list
     """
     return list(__col.find())
+
+
+def get_by_tag(tags: [str]) -> list:
+    """
+    get page by tags
+    :param tags: tag array
+    :return: match pages
+    """
+    return list(__col.find({TAGS: {'$in': tags}}))
