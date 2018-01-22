@@ -17,5 +17,7 @@
 {% extends "layout.html" %}
 
 {% block content_body %}
-    {{ content|safe }}
+    <div class="markdown-body">
+        {{ content|safe }}
+    </div>
 {% endblock %}

@@ -155,7 +155,7 @@ def render_page(page_id: str):
 
     page_type = page[pages.TYPE]
     if page_type == pages.TYPE_MARKDOWN:
-        page_content = markdown.markdown(page_content, extensions=['gfm'])
+        page_content = markdown.markdown(page_content, extensions=['gfm'], extras=['fenced-code-blocks'])
 
     return render_template('content/page.html', title=page[pages.TITLE] + PAGE_NAME_SUFFIX, content=page_content)
 
