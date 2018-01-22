@@ -25,7 +25,7 @@ from flask import Flask, render_template, abort, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from flask_wtf.csrf import CSRFProtect
 
-import markdown2
+import markdown
 
 from db import pages
 import user
@@ -116,7 +116,7 @@ def secret_edit(page_id):
         page_title = request.form['title']
         page_type = request.form['type']
         page_id = request.form['id']
-        page_content = request.form['content']
+        page_content = request.form['content'].replace('\r\n', '\n')
 
         pages.update(id_=page_id, title=page_title, type_=page_type, content=page_content)
         return redirect(url_for('secret_top'))
@@ -155,7 +155,7 @@ def render_page(page_id: str):
 
     page_type = page[pages.TYPE]
     if page_type == pages.TYPE_MARKDOWN:
-        page_content = markdown2.markdown(page_content)
+        page_content = markdown.markdown(page_content, extensions=['gfm'])
 
     return render_template('content/page.html', title=page[pages.TITLE] + PAGE_NAME_SUFFIX, content=page_content)
 

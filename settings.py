@@ -21,4 +21,4 @@
 PAGE_NAME_SUFFIX = ' - my web site'
 
 # User information
-PASSWORD_FILE = '/path/to/password/file'
+PASSWORD_FILE = 'passwd'
