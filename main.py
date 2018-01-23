@@ -33,7 +33,7 @@ from db import pages, tags
 import user
 import auth
 
-from settings import PAGE_NAME_SUFFIX
+import settings
 
 # Flask
 app = Flask(__name__)
@@ -114,6 +114,19 @@ def secret_new():
             links.remove('/' + page_id)
 
         pages.new(id_=page_id, title=page_title, type_=page_type, content=page_content, tags=page_tags, link_to=links)
+
+        if settings.BACKUP_ENABLED:
+            if settings.BACKUP_AS_HTML:
+                backup_content = html
+            else:
+                backup_content = page_content
+            path = settings.BACKUP_DIRECTORY_PATH + '/' + page_id
+            if page_type == pages.TYPE_MARKDOWN:
+                path += '.md'
+            else:
+                path += '.html'
+            backup(backup_content, path)
+
         return redirect(url_for('secret_top'))
 
 
@@ -150,6 +163,19 @@ def secret_edit(page_id):
             links.remove('/' + page_id)
 
         pages.update(id_=page_id, title=page_title, type_=page_type, content=page_content, tags=page_tags)
+
+        if settings.BACKUP_ENABLED:
+            if settings.BACKUP_AS_HTML:
+                backup_content = html
+            else:
+                backup_content = page_content
+            path = settings.BACKUP_DIRECTORY_PATH + '/' + page_id
+            if page_type == pages.TYPE_MARKDOWN:
+                path += '.md'
+            else:
+                path += '.html'
+            backup(backup_content, path)
+
         return redirect(url_for('secret_top'))
 
 
@@ -207,7 +233,8 @@ def render_page(page_id: str):
 
     page_content = process_related(page_content, pages.get_by_link(['/' + page_id]))
 
-    return render_template('content/page.html', title=page[pages.TITLE] + PAGE_NAME_SUFFIX, content=page_content)
+    return render_template('content/page.html',
+                           title=page[pages.TITLE] + settings.PAGE_NAME_SUFFIX, content=page_content)
 
 
 def process_related(html: str, linked_pages: [dict]):
@@ -223,7 +250,6 @@ def process_related(html: str, linked_pages: [dict]):
 def analyze_html(html: str) -> [str]:
     soup = BeautifulSoup(html)
     links = []
-    href = ''
     for a in soup.find_all('a'):
         href = a.get('href')
         if href.startswith('/'):
@@ -233,10 +259,15 @@ def analyze_html(html: str) -> [str]:
     return links
 
 
+def backup(data: str, path: str):
+    with open(path, 'w') as fp:
+        fp.write(data)
+
+
 # Error Handlers
 @app.errorhandler(404)
 def error_404_not_found(err):
-    return render_template('error/404.html', title='404 Not Found' + PAGE_NAME_SUFFIX), err.code
+    return render_template('error/404.html', title='404 Not Found' + settings.PAGE_NAME_SUFFIX), err.code
 
 
 # Before request

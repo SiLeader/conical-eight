@@ -22,3 +22,10 @@ PAGE_NAME_SUFFIX = ' - my web site'
 
 # User information
 PASSWORD_FILE = 'passwd'
+
+# Backup to filesystem
+BACKUP_ENABLED = False
+#  Backup target directory
+BACKUP_DIRECTORY_PATH = 'backup'
+#  Backup non-html file as html
+BACKUP_AS_HTML = False
