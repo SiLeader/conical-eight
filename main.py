@@ -120,7 +120,7 @@ def secret_new():
                 backup_content = html
             else:
                 backup_content = page_content
-            path = settings.BACKUP_DIRECTORY_PATH + '/' + page_id
+            path = settings.BACKUP_DIRECTORY_PATH + '/' + page_title + '-' + page_id
             if page_type == pages.TYPE_MARKDOWN:
                 path += '.md'
             else:
@@ -162,14 +162,15 @@ def secret_edit(page_id):
         if '/' + page_id in links:
             links.remove('/' + page_id)
 
-        pages.update(id_=page_id, title=page_title, type_=page_type, content=page_content, tags=page_tags)
+        pages.update(id_=page_id,
+                     title=page_title, type_=page_type, content=page_content, tags=page_tags, link_to=links)
 
         if settings.BACKUP_ENABLED:
             if settings.BACKUP_AS_HTML:
                 backup_content = html
             else:
                 backup_content = page_content
-            path = settings.BACKUP_DIRECTORY_PATH + '/' + page_id
+            path = settings.BACKUP_DIRECTORY_PATH + '/' + page_title + '-' + page_id
             if page_type == pages.TYPE_MARKDOWN:
                 path += '.md'
             else:
@@ -238,6 +239,8 @@ def render_page(page_id: str):
 
 
 def process_related(html: str, linked_pages: [dict]):
+    if len(linked_pages) <= 0:
+        return html
     link = ['<ul>']
     for lp in linked_pages:
         link.append('<li><a href="/{0}">{1}</a></li>'.format(lp[pages.ID], lp[pages.TITLE]))
