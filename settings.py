@@ -24,7 +24,7 @@ PAGE_NAME_SUFFIX = ' - my web site'
 PASSWORD_FILE = 'passwd'
 
 # Backup to filesystem
-BACKUP_ENABLED = True
+BACKUP_ENABLED = False
 #  Backup target directory
 BACKUP_DIRECTORY_PATH = 'backup'
 #  Backup non-html file as html
