@@ -20,12 +20,14 @@
 import string
 import random
 import os
+import re
 
 from flask import Flask, render_template, abort, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from flask_wtf.csrf import CSRFProtect
 
 import markdown
+from bs4 import BeautifulSoup
 
 from db import pages, tags
 import user
@@ -103,7 +105,14 @@ def secret_new():
         page_content = request.form['content'].replace('\r\n', '\n')
         page_tags = request.form.getlist('tags')
 
-        pages.new(id_=page_id, title=page_title, type_=page_type, content=page_content, tags=page_tags)
+        if page_type == pages.TYPE_MARKDOWN:
+            html = markdown.markdown(page_content, extensions=['gfm'], extras=['fenced-code-blocks'])
+        else:
+            html = page_content
+        links = analyze_html(html)
+        links.remove('/' + page_id)
+
+        pages.new(id_=page_id, title=page_title, type_=page_type, content=page_content, tags=page_tags, link_to=links)
         return redirect(url_for('secret_top'))
 
 
@@ -130,6 +139,13 @@ def secret_edit(page_id):
         page_id = request.form['id']
         page_content = request.form['content'].replace('\r\n', '\n')
         page_tags = request.form.getlist('tags')
+
+        if page_type == pages.TYPE_MARKDOWN:
+            html = markdown.markdown(page_content, extensions=['gfm'], extras=['fenced-code-blocks'])
+        else:
+            html = page_content
+        links = analyze_html(html)
+        links.remove('/' + page_id)
 
         pages.update(id_=page_id, title=page_title, type_=page_type, content=page_content, tags=page_tags)
         return redirect(url_for('secret_top'))
@@ -187,7 +203,28 @@ def render_page(page_id: str):
     if page_type == pages.TYPE_MARKDOWN:
         page_content = markdown.markdown(page_content, extensions=['gfm'], extras=['fenced-code-blocks'])
 
+    page_content = process_related(page_content, pages.get_by_link([page_id]))
+
     return render_template('content/page.html', title=page[pages.TITLE] + PAGE_NAME_SUFFIX, content=page_content)
+
+
+def process_related(html: str, linked_pages: [dict]):
+    link = ['<ul>']
+    for lp in linked_pages:
+        link.append('<li><a href="/{0}">{1}</a></li>'.format(lp[pages.ID], lp[pages.TITLE]))
+    link.append('</ul>')
+    html = re.sub(r'(<\s*x-related\s*/>|<\s*x-related\s*>\s*</\s*x-related\s*>)', '\n'.join(link), html)
+
+    return html
+
+
+def analyze_html(html: str) -> [str]:
+    soup = BeautifulSoup(html)
+    links = []
+    for a in soup.find_all('a'):
+        if a.get('href').startswith('/'):
+            links.append(a.get('href'))
+    return links
 
 
 # Error Handlers

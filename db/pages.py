@@ -29,6 +29,7 @@ TITLE = 'title'
 TYPE = 'type'
 CONTENT = 'content'
 TAGS = 'tags'
+LINK_TO = 'links'
 
 TYPE_MARKDOWN = 'markdown'
 # TYPE_ASCIIDOC = 'asciidoc'
@@ -41,16 +42,19 @@ title: str   ->        -> page title.
 type: str    ->        -> page type. Markdown or RAW
 content: str ->        -> page content. written in <type>.
 tags: [str]  ->        -> tag list
+links: [str] ->        -> link targets
 """
 
 
-def new(id_: str, title: str, type_: str, content: str, tags: [str]) -> bool:
+def new(id_: str, title: str, type_: str, content: str, tags: [str], link_to: [str]) -> bool:
     """
     add new page
     :param id_: page id
     :param title: page title
     :param type_: page type
     :param content: page content
+    :param tags: page tags
+    :param link_to: link targets
     :return: true -> success, false -> ID already exist
     """
     if exists(id_):
@@ -60,7 +64,9 @@ def new(id_: str, title: str, type_: str, content: str, tags: [str]) -> bool:
         ID: id_,
         TITLE: title,
         TYPE: type_,
-        CONTENT: content
+        CONTENT: content,
+        TAGS: tags,
+        LINK_TO: link_to
     })
     return True
 
@@ -83,13 +89,16 @@ def get(id_: str) -> dict:
     return __col.find_one({ID: id_})
 
 
-def update(id_: str, title: str=None, type_: str=None, content: str=None, tags: [str]=None) -> bool:
+def update(id_: str,
+           title: str=None, type_: str=None, content: str=None, tags: [str]=None, link_to: [str]=None) -> bool:
     """
     update page
     :param id_: target page id
     :param title: page title (Optional)
     :param type_: page type (Optional)
     :param content: page content (Optional)
+    :param tags: page tags (Optional)
+    :param link_to: link targets (Optional)
     :return: true -> success, false -> error caused
     """
     doc = {}
@@ -101,6 +110,9 @@ def update(id_: str, title: str=None, type_: str=None, content: str=None, tags: 
         doc[CONTENT] = content
     if tags is not None:
         doc[TAGS] = tags
+    if link_to is not None:
+        doc[LINK_TO] = link_to
+
     return __col.update_one({ID: id_}, {'$set': doc}).acknowledged
 
 
@@ -123,8 +135,17 @@ def get_list():
 
 def get_by_tag(tags: [str]) -> list:
     """
-    get page by tags
+    get pages by tags
     :param tags: tag array
     :return: match pages
     """
     return list(__col.find({TAGS: {'$in': tags}}))
+
+
+def get_by_link(links: [str]) -> list:
+    """
+    get pages by link
+    :param links: target
+    :return:
+    """
+    return list(__col.find({LINK_TO: {'$in': links}}))
