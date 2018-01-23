@@ -46,6 +46,7 @@ If `page-id` is `#top`, route to `(site host)/`.
 + markdown
 + pygments
 + py-gfm
++ beautifulsoup4
 
 
 ## License

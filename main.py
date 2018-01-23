@@ -110,7 +110,8 @@ def secret_new():
         else:
             html = page_content
         links = analyze_html(html)
-        links.remove('/' + page_id)
+        if '/' + page_id in links:
+            links.remove('/' + page_id)
 
         pages.new(id_=page_id, title=page_title, type_=page_type, content=page_content, tags=page_tags, link_to=links)
         return redirect(url_for('secret_top'))
@@ -145,7 +146,8 @@ def secret_edit(page_id):
         else:
             html = page_content
         links = analyze_html(html)
-        links.remove('/' + page_id)
+        if '/' + page_id in links:
+            links.remove('/' + page_id)
 
         pages.update(id_=page_id, title=page_title, type_=page_type, content=page_content, tags=page_tags)
         return redirect(url_for('secret_top'))
@@ -203,7 +205,7 @@ def render_page(page_id: str):
     if page_type == pages.TYPE_MARKDOWN:
         page_content = markdown.markdown(page_content, extensions=['gfm'], extras=['fenced-code-blocks'])
 
-    page_content = process_related(page_content, pages.get_by_link([page_id]))
+    page_content = process_related(page_content, pages.get_by_link(['/' + page_id]))
 
     return render_template('content/page.html', title=page[pages.TITLE] + PAGE_NAME_SUFFIX, content=page_content)
 
@@ -221,9 +223,13 @@ def process_related(html: str, linked_pages: [dict]):
 def analyze_html(html: str) -> [str]:
     soup = BeautifulSoup(html)
     links = []
+    href = ''
     for a in soup.find_all('a'):
-        if a.get('href').startswith('/'):
-            links.append(a.get('href'))
+        href = a.get('href')
+        if href.startswith('/'):
+            if href == '/':
+                href = '/#top'
+            links.append(href)
     return links
 
 
